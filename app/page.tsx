@@ -159,7 +159,6 @@ export default function Page() {
             </span>
           </div>
           <input
-            defaultValue={process.env.NEXT_PUBLIC_SUPABASE_URL}
             className="px-4 py-1 rounded-md"
             ref={SUPABASE_URL}
             placeholder="SUPABASE_URL"
@@ -168,7 +167,6 @@ export default function Page() {
             name="SUPABASE_URL"
           />
           <input
-            defaultValue={process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}
             className="px-4 py-1 rounded-md"
             ref={SUPABASE_ANON_KEY}
             placeholder="SUPABASE_ANON_KEY"
@@ -193,10 +191,8 @@ export default function Page() {
             type="text"
             id="TABLE_NAME"
             name="TABLE_NAME"
-            defaultValue={"example_table"}
           />
           <input
-            defaultValue={"airbnb"}
             className="px-4 py-1 rounded-md"
             ref={BUCKET_NAME}
             placeholder="bucket name (to search)"
@@ -211,7 +207,6 @@ export default function Page() {
             type="text"
             id="FOLDER_NAME"
             name="FOLDER_NAME"
-            defaultValue={"explore_nearby"}
           />
         </div>
 

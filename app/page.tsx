@@ -106,7 +106,7 @@ export default function Page() {
     const anon = SUPABASE_ANON_KEY.current?.value || "";
     try {
       const client = createClient(url || "https://.com", anon || ".");
-      return client
+      return client;
     } catch (error) {
       alert(error);
       return;
@@ -118,12 +118,11 @@ export default function Page() {
       if (!formatedFiles.length || !bucketFiles.length || needsLoadData)
         throw new Error("Load files first/again!");
 
-      const bucketInfo = getBucketInfo();
-
-      const { data, error } = await supabaseClient()!
+      const { error } = await supabaseClient()!
         .from(TABLE_NAME.current?.value || "")
         .insert(formatedFiles);
       if (error) throw error.message;
+      alert("Data added. Check you database");
     } catch (error) {
       alert(error);
     }

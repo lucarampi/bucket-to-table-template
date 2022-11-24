@@ -6,12 +6,12 @@ import InsertButton from "./InsertButton";
 export default async function Page() {
   //Localizanção dos arquivos
   const bucketInfo: BucketInfoType = {
-    bucketName: "airbnb",
-    folderName: "explore_nearby",
+    bucketName: "your_bucket_name_here",
+    folderName: "your_folder_name_here",
   };
 
   //Table onde serão adicionados os dados formatados
-  const tableName = "example_table";
+  const tableName = "your_table_name_here";
 
   //Retorna os primeiros 100 arquivos (em ordem alfabética crescente)
   //da pasta selecionada

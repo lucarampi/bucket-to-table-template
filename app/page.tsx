@@ -102,10 +102,12 @@ export default function Page() {
   });
 
   const supabaseClient = () => {
-    const url = SUPABASE_URL.current?.value || "";
-    const anon = SUPABASE_ANON_KEY.current?.value || "";
     try {
-      return createClient(url || "https://.com", anon || ".");
+      const client = createClient(
+        SUPABASE_URL.current?.value || "https://.com",
+        SUPABASE_ANON_KEY.current?.value || "."
+      );
+      return client;
     } catch (error) {
       alert(error);
       return;

@@ -16,7 +16,8 @@ async function getDataFromBucketFolder(bucketInfo: BucketInfoType, supabase: Sup
         console.error(error);
         return [];
     }
-    return data;
+    //Remove folders, and keep files.
+    return data.filter((item) => !!item.id);
 };
 
 export default getDataFromBucketFolder

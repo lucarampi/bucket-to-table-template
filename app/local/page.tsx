@@ -1,88 +1,44 @@
-"use client";
-
 import { BucketInfoType } from "../../typings";
-import generateRowsFromBucketFolder from "../../utils/web_supabase/generateRowsFromBucketFolder";
-import getDataFromBucketFolder from "../../utils/web_supabase/getDataFromBucketFolder";
-import { useState, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import generateRowsFromBucketFolder from "../../utils/local_supabase/generateRowsFromBucketFolder";
+import getDataFromBucketFolder from "../../utils/local_supabase/getDataFromBucketFolder";
+import InsertButton from "./InsertButton";
 
-// const bucketInfo: BucketInfoType = {
-//   bucketName: "airbnb",
-//   folderName: "explore_nearby",
-// };
-
-const dataToInsert = [
-  { time_distance: "1-hour drive" },
-  { time_distance: "3-hour drive" },
-  { time_distance: "30-minute drive" },
-  { time_distance: "4.5-hour drive" },
-  { time_distance: "7.5-hour drive" },
-  { time_distance: "53-minute drive" },
-  { time_distance: "12-hour drive" },
-  { time_distance: "45-minute drive" },
-];
-
-export default function Page() {
-  const [bucketFiles, setBucketFiles] = useState<any[]>([]);
-  const [formatedFiles, setFormatedFiles] = useState<any[]>([]);
-  const [needsLoadData, setNeedsLoadData] = useState(true);
-  const SUPABASE_URL = useRef<HTMLInputElement>(null);
-  const SUPABASE_ANON_KEY = useRef<HTMLInputElement>(null);
-  const TABLE_NAME = useRef<HTMLInputElement>(null);
-  const BUCKET_NAME = useRef<HTMLInputElement>(null);
-  const FOLDER_NAME = useRef<HTMLInputElement>(null);
-
-  const getBucketInfo = (): BucketInfoType => ({
-    bucketName: BUCKET_NAME.current?.value || "",
-    folderName: FOLDER_NAME.current?.value || "",
-  });
-
-  const supabaseClient = () => {
-    const url = SUPABASE_URL.current?.value || "";
-    const anon = SUPABASE_ANON_KEY.current?.value || "";
-    try {
-      return createClient(url || "https://.com", anon || ".");
-    } catch (error) {
-      alert(error);
-      return;
-    }
+export default async function Page() {
+  //Localizanção dos arquivos
+  const bucketInfo: BucketInfoType = {
+    bucketName: "airbnb",
+    folderName: "explore_nearby",
   };
 
-  async function hendleInsertToDatabase() {
-    setNeedsLoadData(true);
+  //Table onde serão adicionados os dados formatados
+  const tableName = "example_table";
 
-    try {
-      if (!formatedFiles.length || !bucketFiles.length || needsLoadData)
-        throw new Error("Load files first/again!");
+  //Retorna os primeiros 100 arquivos (em ordem alfabética crescente)
+  //da pasta selecionada
+  const bucketFiles = await getDataFromBucketFolder(bucketInfo);
 
-      const bucketInfo = getBucketInfo();
+  //Dados a serem vinculados as imagens
+  //PS: Deve respeitar o formato do banco de dados
+  const dataToInsert = [
+    { time_distance: "1-hour drive" },
+    { time_distance: "3-hour drive" },
+    { time_distance: "30-minute drive" },
+    { time_distance: "4.5-hour drive" },
+    { time_distance: "7.5-hour drive" },
+    { time_distance: "53-minute drive" },
+    { time_distance: "12-hour drive" },
+    { time_distance: "45-minute drive" },
+  ];
 
-      const { data, error } = await supabaseClient()!
-        .from(TABLE_NAME.current?.value || "")
-        .insert(formatedFiles);
-      if (error) throw error.message;
-    } catch (error) {
-      alert(error);
-    }
-  }
+  //Gera um array com as rows a serem adicionadas ao banco de dados SQL
+  //Substitui title por 'location'
+  const tableRows = generateRowsFromBucketFolder(
+    bucketInfo,
+    bucketFiles,
+    dataToInsert,
+    { replaceTitleFor: "location" }
+  );
 
-  async function handleBucketSeach() {
-    const bucketInfo = getBucketInfo();
-
-    const data = await getDataFromBucketFolder(bucketInfo, supabaseClient());
-    console.log(data);
-    setBucketFiles(data || []);
-
-    const tableRows = generateRowsFromBucketFolder(
-      bucketInfo,
-      data || [],
-      dataToInsert,
-      supabaseClient(),
-      { replaceTitleFor: "location" }
-    );
-    setFormatedFiles(tableRows || []);
-    setNeedsLoadData(false);
-  }
 
   return (
     <div className="flex flex-1 flex-col pt-4 px-8">
@@ -121,22 +77,21 @@ export default function Page() {
           <span className="text-xs break-all  ">
             bucketName:
             <span className="block mt-1">
-              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+              {bucketInfo.bucketName ||
                 "Add NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file"}
             </span>
           </span>
           <span className="text-xs break-all  ">
             folderName:
             <span className="block mt-1">
-              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+              {bucketInfo.folderName ||
                 "Add NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file"}
             </span>
           </span>
           <span className="text-xs break-all  ">
-            table (to add the formated data):
+            tableName:
             <span className="block mt-1">
-              {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-                "Add NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file"}
+              {tableName || "Please define the table you want to add the formated data."}
             </span>
           </span>
         </div>
@@ -152,23 +107,17 @@ export default function Page() {
           <div className="flex w-full gap-4 items-center justify-between">
             <button
               type="button"
-              className="rounded-md font-semibold w-1/2 border-2 border-yellow-400 bg-yellow-50 px-3 py-1 outline outline-transparent hover:bg-yellow-400 hover:outline-[3px] hover:outline-yellow-400 hover:shadow-sm hover:text-white hover:font-bold hover:border-white active:scale-95 transition-all duration-200 "
-              onClick={async () => await handleBucketSeach()}
+              disabled
+              className="rounded-md font-semibold w-1/2 border-2 border-blue-300 bg-blue-50 px-3 py-1"
             >
-              Load files
+              Auto Search
             </button>
             <span className="w-1/2">
               Total files found: {bucketFiles?.length}
             </span>
           </div>
 
-          <button
-            type="button"
-            className="rounded-md font-semibold w-full border-2  border-red-400 bg-red-50 px-3 py-1 outline outline-transparent hover:bg-red-600 hover:outline-[3px] hover:outline-red-600 hover:shadow-sm hover:text-white hover:border-white active:scale-95 transition-all duration-200 "
-            onClick={async () => await hendleInsertToDatabase()}
-          >
-            PERFORM FORMATED DATA INSERT
-          </button>
+          <InsertButton tableName={tableName} tableRows={tableRows}/>
         </div>
       </div>
 
@@ -186,7 +135,7 @@ export default function Page() {
             <div className="flex justify-start">
               <span>New formated data:</span>
             </div>
-            <pre>{JSON.stringify(formatedFiles, null, " ")}</pre>
+            <pre>{JSON.stringify(tableRows, null, " ")}</pre>
           </div>
         </div>
       </main>
